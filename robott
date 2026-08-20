@@ -1,0 +1,172 @@
+import imrt_robot_serial
+import time
+import sys
+
+
+# ---------------------------------------------------------
+# INNSTILLINGER
+# ---------------------------------------------------------
+
+execution_frequency = 10
+execution_period = 1.0 / execution_frequency
+
+# Hvor langt unna en vegg må være før vi reagerer?
+obstacle_threshold_cm = 40.0
+
+# Hastighet når roboten kjører framover
+forward_speed = 120
+
+# Hastighet under sving
+turn_speed = 100
+
+# Hvor lenge roboten skal svinge for å få ca. 90 grader
+# Denne må kalibreres på deres robot!
+turn_time = 0.65
+
+
+# ---------------------------------------------------------
+# KOBLE TIL ROBOT
+# ---------------------------------------------------------
+
+motor_serial = imrt_robot_serial.IMRTRobotSerial()
+
+try:
+    motor_serial.connect("/dev/ttyACM0")
+except:
+    print("Could not open port. Is your robot connected?")
+    sys.exit()
+
+motor_serial.run()
+
+print("Entering loop. Ctrl+c to terminate")
+
+
+# ---------------------------------------------------------
+# FUNKSJONER
+# ---------------------------------------------------------
+
+def stop_robot():
+    """Stopper begge motorene."""
+    motor_serial.send_command(0, 0)
+
+
+def turn_right_90():
+    """Svinger roboten omtrent 90 grader mot høyre."""
+
+    print("Svinger HØYRE")
+
+    # Ett hjul fram og ett bak
+    motor_serial.send_command(turn_speed, -turn_speed)
+
+    # Hvor lenge vi skal rotere
+    time.sleep(turn_time)
+
+    # Stopp
+    stop_robot()
+
+    # Liten pause etter svingen
+    time.sleep(0.2)
+
+
+def turn_left_90():
+    """Svinger roboten omtrent 90 grader mot venstre."""
+
+    print("Svinger VENSTRE")
+
+    # Motsatt retning
+    motor_serial.send_command(-turn_speed, turn_speed)
+
+    time.sleep(turn_time)
+
+    stop_robot()
+
+    time.sleep(0.2)
+
+
+# ---------------------------------------------------------
+# HOVEDLØKKE
+# ---------------------------------------------------------
+
+while not motor_serial.shutdown_now:
+
+    iteration_start_time = time.time()
+
+    # -----------------------------------------------------
+    # LES SENSORER
+    # -----------------------------------------------------
+
+    dist_1 = motor_serial.get_dist_1()
+    dist_2 = motor_serial.get_dist_2()
+    dist_3 = motor_serial.get_dist_3()
+    dist_4 = motor_serial.get_dist_4()
+
+    print(
+        "Venstre:", dist_1,
+        " Foran:", dist_2,
+        " Høyre:", dist_3,
+        " Bak:", dist_4
+    )
+
+
+    # -----------------------------------------------------
+    # SJEKK HVOR DET ER VEGGER
+    # -----------------------------------------------------
+
+    wall_left = dist_1 < obstacle_threshold_cm
+    wall_front = dist_2 < obstacle_threshold_cm
+    wall_right = dist_3 < obstacle_threshold_cm
+
+
+    # -----------------------------------------------------
+    # NAVIGASJON
+    # -----------------------------------------------------
+
+    # 1. Vegg foran OG vegg til venstre
+    if wall_front and wall_left:
+
+        print("Vegg foran + venstre -> HØYRE")
+
+        turn_right_90()
+
+
+    # 2. Bare vegg foran
+    elif wall_front:
+
+        print("Vegg foran -> HØYRE")
+
+        turn_right_90()
+
+
+    # 3. Ingen vegg foran
+    else:
+
+        # Kjør rett fram
+        motor_serial.send_command(
+            forward_speed,
+            forward_speed
+        )
+
+
+    # -----------------------------------------------------
+    # HOLD 10 Hz
+    # -----------------------------------------------------
+
+    iteration_end_time = time.time()
+
+    iteration_duration = (
+        iteration_end_time - iteration_start_time
+    )
+
+    if iteration_duration < execution_period:
+        time.sleep(
+            execution_period - iteration_duration
+        )
+
+
+# ---------------------------------------------------------
+# AVSLUTT
+# ---------------------------------------------------------
+
+stop_robot()
+
+print("Goodbye")
