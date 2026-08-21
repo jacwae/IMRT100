@@ -78,7 +78,7 @@ while not motor_serial.shutdown_now :
         speed_motor_2 = -60
 
     # hindring foran på alle sensorer
-    elif  min(dist_1,dist_2,dist_3)< obstacle_threshold_cm:
+    elif  dist_1 < obstacle_threshold_cm and dist_2< 30.0 and dist_3< 30.0:
         # snu rundt i en viss tid
         turn_until = now + turn_duration
         speed_motor_1 = 60
