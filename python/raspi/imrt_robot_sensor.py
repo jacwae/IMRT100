@@ -58,7 +58,7 @@ while not motor_serial.shutdown_now :
     now = time.time()
 
     # Obstacle threshold in cm
-    obstacle_threshold_cm = 30.0
+    obstacle_threshold_cm = 15.0
     #turn_duration = 1.34
 
     # Get and print readings from distance sensors
@@ -78,7 +78,7 @@ while not motor_serial.shutdown_now :
         speed_motor_2 = -60
 
     # hindring foran på alle sensorer
-    elif dist_1 < obstacle_threshold_cm and dist_2 < obstacle_threshold_cm and dist_3 < obstacle_threshold_cm:
+    elif  min(dist_1,dist_2,dist_3)< obstacle_threshold_cm:
         # snu rundt i en viss tid
         turn_until = now + turn_duration
         speed_motor_1 = 60
