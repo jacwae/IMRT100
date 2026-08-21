@@ -58,7 +58,7 @@ while not motor_serial.shutdown_now :
     now = time.time()
 
     # Obstacle threshold in cm
-    obstacle_threshold_cm = 16.0
+    obstacle_threshold_cm = 15.0
     #turn_duration = 1.34
 
     # Get and print readings from distance sensors
