@@ -1,30 +1,33 @@
-import os
+import pathlib as Path
 import subprocess
 
-LYDFIL = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "lydfil",
-        "pwlpl-epic-t-rex-roaring-sound-effect-powerful-dinosaur-444199.mp3",
+# Lydfilen ligger i samme mappe som Python-programmet
+AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
+
+
+def play_audio(file_path):
+    """Spiller en WAV-fil gjennom Raspberry Pi-ens lydutgang."""
+    if not file_path.exists():
+        raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
+
+    print(f"Spiller: {file_path.name}")
+    subprocess.run(
+        ["aplay", "-q", str(file_path)],
+        check=True
     )
-)
 
-if not os.path.isfile(LYDFIL):
-    raise FileNotFoundError(f"Fant ikke lydfilen: {LYDFIL}")
-
-prosess = None
 
 try:
-    prosess = subprocess.Popen(["mpg123", "-q", LYDFIL])
-    prosess.wait()
+    play_audio(AUDIO_FILE)
 
 except KeyboardInterrupt:
-    print("Stoppet av bruker")
+    print("\nAvsluttet av brukeren")
+
+except FileNotFoundError as error:
+    print(error)
+
+except subprocess.CalledProcessError:
+    print("Lydfilen kunne ikke spilles.")
 
 finally:
-    if prosess is not None and prosess.poll() is None:
-        prosess.terminate()
-
-    print("Goodbye")
+    print("Ha det!")
