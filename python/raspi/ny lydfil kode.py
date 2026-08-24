@@ -1,16 +1,19 @@
-import pathlib as Path
+from pathlib import Path
+import random
 import subprocess
-# funk for faen
+import time
+
 # Lydfilen ligger i samme mappe som Python-programmet
 AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
 
 
 def play_audio(file_path):
-    """Spiller en WAV-fil gjennom Raspberry Pi-ens lydutgang."""
+    """Spiller en WAV-fil."""
     if not file_path.exists():
         raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
 
     print(f"Spiller: {file_path.name}")
+
     subprocess.run(
         ["aplay", "-q", str(file_path)],
         check=True
@@ -18,7 +21,14 @@ def play_audio(file_path):
 
 
 try:
-    play_audio(AUDIO_FILE)
+    while True:
+        # Velg en tilfeldig ventetid mellom 3 og 5 sekunder
+        wait_time = random.uniform(3, 5)
+
+        print(f"Venter {wait_time:.1f} sekunder...")
+        time.sleep(wait_time)
+
+        play_audio(AUDIO_FILE)
 
 except KeyboardInterrupt:
     print("\nAvsluttet av brukeren")
