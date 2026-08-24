@@ -17,7 +17,7 @@ AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
 MIN_AUDIO_WAIT = 3.0
 MAX_AUDIO_WAIT = 5.0
 
-OBSTACLE_THRESHOLD_CM = 30.0
+OBSTACLE_THRESHOLD_CM = 18.0
 TURN_DURATION = 1.34
 
 
@@ -99,8 +99,8 @@ try:
         )
 
         # Standardbevegelse: kjør fremover.
-        speed_motor_1 = 120
-        speed_motor_2 = 120
+        speed_motor_1 = 160
+        speed_motor_2 = 160
 
         # Fortsett en allerede påbegynt vending.
         if now < turn_until:
@@ -110,8 +110,8 @@ try:
         # Hindring foran på alle de tre fremre sensorene: snu.
         elif (
             dist_1 < OBSTACLE_THRESHOLD_CM
-            and dist_2 < OBSTACLE_THRESHOLD_CM
-            and dist_3 < OBSTACLE_THRESHOLD_CM
+            and dist_2 < 30.0
+            and dist_3 < 30.0
         ):
             turn_until = now + TURN_DURATION
             speed_motor_1 = 60
