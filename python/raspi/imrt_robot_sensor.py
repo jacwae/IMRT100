@@ -58,7 +58,7 @@ while not motor_serial.shutdown_now :
     now = time.time()
 
     # Obstacle threshold in cm
-    obstacle_threshold_cm = 20.0
+    obstacle_threshold_cm = 15.0
     #turn_duration = 1.34
 
     # Get and print readings from distance sensors
@@ -69,8 +69,8 @@ while not motor_serial.shutdown_now :
     print("foran:", dist_1, " venstre:", dist_2, "høyre:", dist_3, "bak", dist_4)
 
     # Default forward motion
-    speed_motor_1 = 220
-    speed_motor_2 = 220
+    speed_motor_1 = 180
+    speed_motor_2 = 180
 
     # Keep turning for the remaining duration before resuming normal behavior
     if now < turn_until:
