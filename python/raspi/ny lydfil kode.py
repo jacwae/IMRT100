@@ -1,6 +1,6 @@
 import pathlib as Path
 import subprocess
-
+# funk for faen
 # Lydfilen ligger i samme mappe som Python-programmet
 AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
 
