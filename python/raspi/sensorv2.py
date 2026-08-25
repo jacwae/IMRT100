@@ -10,7 +10,7 @@ execution_period = 1.0 / execution_frequency
 obstacle_threshold_cm = 15.0
 
 # Tid roboten skal snu når den er blokkert
-turn_duration = 0.84
+turn_duration = 1.05
 turn_until = 0.0
 
 # Opprett forbindelse med roboten
@@ -70,28 +70,28 @@ try:
         elif dist_1 < obstacle_threshold_cm:
             if dist_2 > dist_3:
                 # Mest plass til høyre
-                speed_motor_1 = -80
-                speed_motor_2 = 120
-            else:
-                # Mest plass til venstre
                 speed_motor_1 = 120
                 speed_motor_2 = -80
+            else:
+                # Mest plass til venstre
+                speed_motor_1 = -80
+                speed_motor_2 = 120
 
         # Hindring på høyre side, men friere til venstre
         elif (
             dist_2 < obstacle_threshold_cm
             and dist_3 >= obstacle_threshold_cm
         ):
-            speed_motor_1 = 120
-            speed_motor_2 = -80
+            speed_motor_1 = -80
+            speed_motor_2 = 120
 
         # Hindring på venstre side, men friere til høyre
         elif (
             dist_3 < obstacle_threshold_cm
             and dist_2 >= obstacle_threshold_cm
         ):
-            speed_motor_1 = -80
-            speed_motor_2 = 120
+            speed_motor_1 = 120
+            speed_motor_2 = -80
 
         # Begrens motorfart mellom -400 og 400
         speed_motor_1 = max(-400, min(400, speed_motor_1))
