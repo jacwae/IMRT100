@@ -51,8 +51,8 @@ try:
 
         # Fortsett en vending som allerede er startet
         if now < turn_until:
-            speed_motor_1 = 60
-            speed_motor_2 = -60
+            speed_motor_1 = -60
+            speed_motor_2 = 60
 
         # Hindring foran og lite plass på begge sider:
         # snu rundt
@@ -62,36 +62,36 @@ try:
             and dist_3 < 30.0
         ):
             turn_until = now + turn_duration
-            speed_motor_1 = 60
-            speed_motor_2 = -60
+            speed_motor_1 = -60
+            speed_motor_2 = 60
 
         # Hindring rett foran:
         # velg siden med mest plass
         elif dist_1 < obstacle_threshold_cm:
             if dist_2 > dist_3:
                 # Mest plass til høyre
-                speed_motor_1 = 120
-                speed_motor_2 = -80
-            else:
-                # Mest plass til venstre
                 speed_motor_1 = -80
                 speed_motor_2 = 120
+            else:
+                # Mest plass til venstre
+                speed_motor_1 = 120
+                speed_motor_2 = -80
 
         # Hindring på høyre side, men friere til venstre
         elif (
             dist_2 < obstacle_threshold_cm
             and dist_3 >= obstacle_threshold_cm
         ):
-            speed_motor_1 = -80
-            speed_motor_2 = 120
+            speed_motor_1 = 120
+            speed_motor_2 = -80
 
         # Hindring på venstre side, men friere til høyre
         elif (
             dist_3 < obstacle_threshold_cm
             and dist_2 >= obstacle_threshold_cm
         ):
-            speed_motor_1 = 120
-            speed_motor_2 = -80
+            speed_motor_1 = -80
+            speed_motor_2 = 120
 
         # Begrens motorfart mellom -400 og 400
         speed_motor_1 = max(-400, min(400, speed_motor_1))
