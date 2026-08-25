@@ -59,7 +59,7 @@ try:
         elif dist_1 < obstacle_threshold_cm and dist_2 < 30.0 and dist_3 <30.0:
             #snu rundt 
             turn_until = now + turn_duration
-            motor_speed_1 = 120
+            motor_speed_1 = 60
             motor_speed_2 = -60
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
@@ -71,17 +71,15 @@ try:
             else:
                 motor_speed_1 = -80
                 motor_speed_2 = 120
-        # hindring på høyre side
-        #elif dist_3 < obstacle_threshold_cm and dist_2 > obstacle_threshold_cm:
-            #sving venstre
-           # motor_speed_1 = -80
-            #motor_speed_2 = 120
-        #hindring venstre side 
+        # Hindring på venstre side: sving høyre.
         elif dist_2 < obstacle_threshold_cm:
             motor_speed_1 = 120
             motor_speed_2 = -80
-         # hindring foran, men langt unna
-    
+
+        # Hindring på høyre side: sving venstre.
+        elif dist_3 < obstacle_threshold_cm:
+            motor_speed_1 = -80
+            motor_speed_2 = 120
 
         # Begrens motorfart mellom -400 og 400
         motor_speed_1 = max(-400, min(400, motor_speed_1))
