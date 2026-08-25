@@ -34,8 +34,9 @@ try:
 
         # Les sensorene
         dist_1 = motor_serial.get_dist_1()  # foran
-        dist_2 = motor_serial.get_dist_2()  # høyre
-        dist_3 = motor_serial.get_dist_3()  # venstre
+        # Sensor 2 og sensor 3 er byttet fysisk på roboten.
+        dist_2 = motor_serial.get_dist_3()  # høyre
+        dist_3 = motor_serial.get_dist_2()  # venstre
         dist_4 = motor_serial.get_dist_4()  # bak
 
         print(
