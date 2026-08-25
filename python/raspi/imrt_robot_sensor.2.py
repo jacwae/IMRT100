@@ -72,23 +72,20 @@ try:
                 motor_speed_1 = -80
                 motor_speed_2 = 120
         # hindring på høyre side
-        elif dist_3 < obstacle_threshold_cm and dist_2 > obstacle_threshold_cm:
+        #elif dist_3 < obstacle_threshold_cm and dist_2 > obstacle_threshold_cm:
             #sving venstre
-            motor_speed_1 = -80
-            motor_speed_2 = 120
+           # motor_speed_1 = -80
+            #motor_speed_2 = 120
         #hindring venstre side 
-        elif dist_2 < obstacle_threshold_cm and dist_3 > obstacle_threshold_cm:
-            #sving høyre
+        elif dist_2 < obstacle_threshold_cm:
             motor_speed_1 = 120
             motor_speed_2 = -80
          # hindring foran, men langt unna
-        elif dist_1 > obstacle_threshold_cm and dist_2 == dist_3:
-            speed_motor_1 = 60
-            speed_motor_2 = 60
+    
 
         # Begrens motorfart mellom -400 og 400
-        motor_speed_1 = max(-400, min(400, speed_motor_1))
-        motor_speed_2 = max(-400, min(400, speed_motor_2))
+        motor_speed_1 = max(-400, min(400, motor_speed_1))
+        motor_speed_2 = max(-400, min(400, motor_speed_2))
         
                 # Send kommando til motorene
         motor_serial.send_command(motor_speed_1, motor_speed_2)
