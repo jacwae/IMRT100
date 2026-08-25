@@ -30,7 +30,7 @@ motor_serial.run()
 
 # Time until robot stops turning and resumes normal driving
 turn_until = 0.0
-turn_duration = 1.34
+turn_duration = 0.90
 # Now we will enter a loop that will keep looping until the program terminates
 # The motor_serial object will inform us when it's time to exit the program
 # (say if the program is terminated by the user)
@@ -58,7 +58,7 @@ while not motor_serial.shutdown_now :
     now = time.time()
 
     # Obstacle threshold in cm
-    obstacle_threshold_cm = 15.0
+    obstacle_threshold_cm = 18.0
     #turn_duration = 1.34
 
     # Get and print readings from distance sensors
