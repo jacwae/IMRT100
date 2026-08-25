@@ -1,32 +1,43 @@
-import os
+from pathlib import Path
+import random
+import subprocess
 import time
-import pygame
 
-LYDFIL = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "lydfil",
-        "pwlpl-epic-t-rex-roaring-sound-effect-powerful-dinosaur-444199.mp3",
+# Lydfilen ligger i samme mappe som Python-programmet
+AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
+
+
+def play_audio(file_path):
+    """Spiller en WAV-fil."""
+    if not file_path.exists():
+        raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
+
+    print(f"Spiller: {file_path.name}")
+
+    subprocess.run(
+        ["aplay", "-q", str(file_path)],
+        check=True
     )
-)
 
-if not os.path.isfile(LYDFIL):
-    raise FileNotFoundError(f"Fant ikke lydfilen: {LYDFIL}")
-
-# pygame bruker Raspberry Pi sitt valgte lydkort, for eksempel AUX-utgangen.
-pygame.mixer.init()
 
 try:
-    pygame.mixer.music.load(LYDFIL)
-    pygame.mixer.music.play()
-    while pygame.mixer.music.get_busy():
-        time.sleep(0.1)
+    while True:
+        # Velg en tilfeldig ventetid mellom 3 og 5 sekunder
+        wait_time = random.uniform(3, 5)
+
+        print(f"Venter {wait_time:.1f} sekunder...")
+        time.sleep(wait_time)
+
+        play_audio(AUDIO_FILE)
+
 except KeyboardInterrupt:
-    print("Terminated by user")
+    print("\nAvsluttet av brukeren")
+
+except FileNotFoundError as error:
+    print(error)
+
+except subprocess.CalledProcessError:
+    print("Lydfilen kunne ikke spilles.")
 
 finally:
-    pygame.mixer.music.stop()
-    pygame.mixer.quit()
-    print("Goodbye")
+    print("Ha det!")

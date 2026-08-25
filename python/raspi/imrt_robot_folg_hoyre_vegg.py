@@ -153,13 +153,20 @@ try:
         if not right_turn_armed and right_distance < WALL_FOUND_DISTANCE:
             right_turn_armed = True
 
-        # Fronten har alltid prioritet, slik at roboten ikke svinger inn i en vegg.
+        # Ved frontvegg brukes høyrehåndsregelen først.
         if front_distance < FRONT_STOP_DISTANCE:
             stop_robot(0.15)
-            turn_left()
-            new_front, _ = read_sensors()
-            if new_front is not None and new_front < FRONT_STOP_DISTANCE:
+            if right_distance > RIGHT_OPEN_DISTANCE:
+                # Fronten er blokkert, men det finnes en 90-gradersvei til høyre.
+                turn_right()
+                right_turn_armed = False
+                drive(FORWARD_SPEED, FORWARD_SPEED, 0.15)
+            else:
+                # Ingen høyrevei: prøv venstre. To blokkeringer betyr blindvei.
                 turn_left()
+                new_front, _ = read_sensors()
+                if new_front is not None and new_front < FRONT_STOP_DISTANCE:
+                    turn_left()
         elif right_turn_armed and right_distance > RIGHT_OPEN_DISTANCE:
             turn_right()
             right_turn_armed = False

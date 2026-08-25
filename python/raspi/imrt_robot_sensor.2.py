@@ -8,7 +8,7 @@ execution_frequency = 10
 execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
-obstacle_threshold_cm = 18.0
+obstacle_threshold_cm = 20.0
 
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
