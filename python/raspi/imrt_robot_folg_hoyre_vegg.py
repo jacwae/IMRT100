@@ -38,7 +38,8 @@ last_valid_front = None
 last_valid_right = None
 invalid_front_reads = 0
 invalid_right_reads = 0
-right_turn_armed = True
+# Start med å finne høyreveggen. Ikke ta en høyresving i et åpent område.
+right_turn_armed = False
 
 
 def limit(value, minimum, maximum):
@@ -152,16 +153,17 @@ try:
         if not right_turn_armed and right_distance < WALL_FOUND_DISTANCE:
             right_turn_armed = True
 
-        if right_turn_armed and right_distance > RIGHT_OPEN_DISTANCE:
-            turn_right()
-            right_turn_armed = False
-            drive(FORWARD_SPEED, FORWARD_SPEED, 0.15)
-        elif front_distance < FRONT_STOP_DISTANCE:
+        # Fronten har alltid prioritet, slik at roboten ikke svinger inn i en vegg.
+        if front_distance < FRONT_STOP_DISTANCE:
             stop_robot(0.15)
             turn_left()
             new_front, _ = read_sensors()
             if new_front is not None and new_front < FRONT_STOP_DISTANCE:
                 turn_left()
+        elif right_turn_armed and right_distance > RIGHT_OPEN_DISTANCE:
+            turn_right()
+            right_turn_armed = False
+            drive(FORWARD_SPEED, FORWARD_SPEED, 0.15)
         elif not right_turn_armed and right_distance > WALL_FOUND_DISTANCE:
             motor_serial.send_command(FORWARD_SPEED, FORWARD_SPEED)
         else:
