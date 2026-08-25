@@ -58,7 +58,7 @@ while not motor_serial.shutdown_now :
     now = time.time()
 
     # Obstacle threshold in cm
-    obstacle_threshold_cm = 18.0
+    obstacle_threshold_cm = 15.0
     #turn_duration = 1.34
 
     # Get and print readings from distance sensors
@@ -69,8 +69,8 @@ while not motor_serial.shutdown_now :
     print("foran:", dist_1, " venstre:", dist_2, "høyre:", dist_3, "bak", dist_4)
 
     # Default forward motion
-    speed_motor_1 = 180
-    speed_motor_2 = 180
+    speed_motor_1 = 120
+    speed_motor_2 = 120
 
     # Keep turning for the remaining duration before resuming normal behavior
     if now < turn_until:
@@ -92,11 +92,12 @@ while not motor_serial.shutdown_now :
             #sving mot venstre
             speed_motor_1 = -80
             speed_motor_2 =120
-
+ 
         else: 
             #sving mot høyre 
             speed_motor_1 = 120
             speed_motor_2 = -80 
+ 
     #hindring foran venstre:
     elif dist_2 < obstacle_threshold_cm and dist_2 < dist_3:
         #sving høyre
@@ -113,7 +114,6 @@ while not motor_serial.shutdown_now :
         speed_motor_1 = 60
         speed_motor_2 = 60
     
-
     
     '''
     # If something is closer than 100 cm, react and steer away from it
