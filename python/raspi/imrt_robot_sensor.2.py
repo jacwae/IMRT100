@@ -48,8 +48,8 @@ try:
 
         # default fart roboten skal holde
 
-        motor_speed_1 = 120
-        motor_speed_2 = 120
+        motor_speed_1 = 180
+        motor_speed_2 = 180
 
         #fortsette vending som har startet
         if now < turn_until:
@@ -72,12 +72,12 @@ try:
                 motor_speed_1 = -80
                 motor_speed_2 = 120
         # hindring på høyre side
-        elif dist_3 < obstacle_threshold_cm:
+        elif dist_3 < obstacle_threshold_cm and dist_2 > obstacle_threshold_cm:
             #sving venstre
             motor_speed_1 = -80
             motor_speed_2 = 120
         #hindring venstre side 
-        elif dist_2 < obstacle_threshold_cm:
+        elif dist_2 < obstacle_threshold_cm and dist_3 > obstacle_threshold_cm:
             #sving høyre
             motor_speed_1 = 120
             motor_speed_2 = -80
@@ -87,16 +87,16 @@ try:
             speed_motor_2 = 60
 
         # Begrens motorfart mellom -400 og 400
-        speed_motor_1 = max(-400, min(400, speed_motor_1))
-        speed_motor_2 = max(-400, min(400, speed_motor_2))
+        motor_speed_1 = max(-400, min(400, speed_motor_1))
+        motor_speed_2 = max(-400, min(400, speed_motor_2))
         
                 # Send kommando til motorene
-        motor_serial.send_command(speed_motor_1, speed_motor_2)
+        motor_serial.send_command(motor_speed_1, motor_speed_2)
         
         # Hold løkken på 10 ganger per sekund
         iteration_duration = time.time() - iteration_start_time
         if iteration_duration < execution_period:
-        time.sleep(execution_period - iteration_duration)
+            time.sleep(execution_period - iteration_duration)
         
 except KeyboardInterrupt:
     print("Robot stoppet av bruker.")
