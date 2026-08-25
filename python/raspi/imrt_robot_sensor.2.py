@@ -81,14 +81,7 @@ try:
             motor_speed_1 = -80
             motor_speed_2 = 120
         
-        if dist_1<obstacle_threshold_cm:
-            if dist_2>15:
-                motor_speed_1 = 120
-                motor_speed_2 = -80
-
-            else: 
-                motor_speed_1 = -80
-                motor_speed_2 = 120
+        
         # Begrens motorfart mellom -400 og 400
         motor_speed_1 = max(-400, min(400, motor_speed_1))
         motor_speed_2 = max(-400, min(400, motor_speed_2))
