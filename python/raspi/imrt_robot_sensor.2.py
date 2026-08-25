@@ -77,7 +77,7 @@ try:
             motor_speed_2 = -80
 
         # Hindring på høyre side: sving venstre.
-        elif dist_3 < obstacle_threshold_cm:
+        elif dist_3 < obstacle_threshold_cm and dist_2 > 15:
             motor_speed_1 = -80
             motor_speed_2 = 120
 
