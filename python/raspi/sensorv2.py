@@ -10,7 +10,7 @@ execution_period = 1.0 / execution_frequency
 obstacle_threshold_cm = 15.0
 
 # Tid roboten skal snu når den er blokkert
-turn_duration = 1.34
+turn_duration = 0.84
 turn_until = 0.0
 
 # Opprett forbindelse med roboten
