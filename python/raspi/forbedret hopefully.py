@@ -15,6 +15,8 @@ right_closed = 15
 turn_duration = 1.34
 turn_duration_90 = 0.6
 turn_until = 0.0
+turn_speed_1 = 0
+turn_speed_2 = 0
 
 # Opprett forbindelse med roboten
 motor_serial = imrt_robot_serial.IMRTRobotSerial()
@@ -55,14 +57,16 @@ try:
 
         #fortsette vending som har startet
         if now < turn_until:
-            motor_speed_1 = 60
-            motor_speed_2 = -60
+            motor_speed_1 = turn_speed_1
+            motor_speed_2 = turn_speed_2
 
         elif dist_1 < obstacle_threshold_cm and dist_2 < 30.0 and dist_3 <30.0:
             #snu rundt 
             turn_until = now + turn_duration
             motor_speed_1 = 60
             motor_speed_2 = -60
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
             if dist_3 > right_open:
@@ -70,27 +74,35 @@ try:
                 motor_speed_1 = 120
                 motor_speed_2 = -80
                 turn_until = now + turn_duration_90
-            # sving vensrte
-            elif dist_3 < right_closed:
+            else:
+                # Høyre er ikke tydelig åpen: sving venstre.
                 motor_speed_1 = -80
                 motor_speed_2 = 120
                 turn_until = now + turn_duration_90
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
         # Hindring på venstre side: sving høyre.
         elif dist_2 < obstacle_threshold_cm:
             motor_speed_1 = 120
             motor_speed_2 = -80
+            turn_until = now + turn_duration_90
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
 
         # Hindring på høyre side: sving venstre.
         elif dist_3 < obstacle_threshold_cm :
             motor_speed_1 = -80
             motor_speed_2 = 120
+            turn_until = now + turn_duration_90
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
         
         
         # Begrens motorfart mellom -400 og 400
         motor_speed_1 = max(-400, min(400, motor_speed_1))
         motor_speed_2 = max(-400, min(400, motor_speed_2))
         
-                # Send kommando til motorene
+            # Send kommando til motorene.
         motor_serial.send_command(motor_speed_1, motor_speed_2)
         
         # Hold løkken på 10 ganger per sekund
