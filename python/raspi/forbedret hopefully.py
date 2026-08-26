@@ -17,36 +17,11 @@ def play_audio(file_path):
         raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
 
     print(f"Spiller: {file_path.name}")
-
-    subprocess.run(
-        ["aplay", "-q", str(file_path)],
-        check=True
-    )
+    return subprocess.Popen(["aplay", "-q", str(file_path)])
 
 
-try:
-    while True:
-        # Velg en tilfeldig ventetid mellom 3 og 5 sekunder
-        wait_time = random.uniform(3, 5)
-
-        print(f"Venter {wait_time:.1f} sekunder...")
-        time.sleep(wait_time)
-
-        play_audio(AUDIO_FILE)
-
-except KeyboardInterrupt:
-    print("\nAvsluttet av brukeren")
-
-except FileNotFoundError as error:
-    print(error)
-
-except subprocess.CalledProcessError:
-    print("Lydfilen kunne ikke spilles.")
-
-finally:
-    print("Ha det!")
-
-
+next_audio_time = time.time() + random.uniform(3, 5)
+audio_process = None
 
 
 # Programmet sender 10 kommandoer i sekundet
@@ -82,6 +57,17 @@ try:
     while not motor_serial.shutdown_now:
         iteration_start_time = time.time()
         now = time.time()
+
+        # Spill av lyd tilfeldig hvert 3.-5. sekund uten å stoppe roboten.
+        if now >= next_audio_time:
+            if audio_process is None or audio_process.poll() is not None:
+                try:
+                    audio_process = play_audio(AUDIO_FILE)
+                except FileNotFoundError as error:
+                    print(error)
+                except OSError as error:
+                    print(f"Kunne ikke starte lydavspilling: {error}")
+                next_audio_time = now + random.uniform(3, 5)
 
         # Les sensorene
         dist_1 = motor_serial.get_dist_1()  # foran
