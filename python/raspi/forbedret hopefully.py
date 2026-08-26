@@ -7,8 +7,8 @@ import random
 import subprocess
 
 
-# Lydfilen ligger i samme mappe som Python-programmet
-AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
+# Lydfilen ligger i IMRT100/lydfil.
+AUDIO_FILE = Path(__file__).resolve().parents[2] / "lydfil" / "dinosaur.wav"
 
 
 def play_audio(file_path):
