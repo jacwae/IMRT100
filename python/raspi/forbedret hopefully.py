@@ -9,7 +9,7 @@ execution_frequency = 10
 execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
-obstacle_threshold_cm = 20.0
+obstacle_threshold_cm = 25.0
 side_obstacle_cm = 15.0
 right_open = 35
 side_margin = 8
