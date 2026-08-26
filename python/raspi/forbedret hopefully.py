@@ -9,6 +9,8 @@ import subprocess
 
 # Lydfilen ligger i IMRT100/lydfil.
 AUDIO_FILE = Path(__file__).resolve().parents[2] / "lydfil" / "dinosaur.wav"
+# Raspberry Pi sin analoge hodetelefon-/AUX-utgang.
+AUDIO_DEVICE = "sysdefault:CARD=Headphones"
 
 
 def play_audio(file_path):
@@ -17,7 +19,7 @@ def play_audio(file_path):
         raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
 
     print(f"Spiller: {file_path.name}")
-    return subprocess.Popen(["aplay", "-q", str(file_path)])
+    return subprocess.Popen(["aplay", "-D", AUDIO_DEVICE, str(file_path)])
 
 
 next_audio_time = time.time() + random.uniform(3, 5)
