@@ -2,33 +2,6 @@ import imrt_robot_serial
 import time
 import signal
 import sys
-from pathlib import Path
-import random
-import subprocess
-
-
-# Finn lydfilen enten i prosjektets lydfil-mappe eller ved siden av programmet.
-audio_locations = (
-    Path(__file__).resolve().parents[2] / "lydfil" / "dinosaur.wav",
-    Path(__file__).resolve().with_name("dinosaur.wav"),
-)
-AUDIO_FILE = next((path for path in audio_locations if path.is_file()), audio_locations[0])
-
-
-def play_audio(file_path):
-    """Spiller en WAV-fil."""
-    if not file_path.exists():
-        raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
-
-    print(f"Spiller: {file_path.name}")
-    return subprocess.Popen(["aplay", str(file_path)])
-
-
-print(f"Lydfil: {AUDIO_FILE} (finnes: {AUDIO_FILE.is_file()})")
-wait_time = random.uniform(10, 20)
-print(f"Venter {wait_time:.1f} sekunder...")
-next_audio_time = time.time() + wait_time
-audio_process = None
 
 
 # Programmet sender 10 kommandoer i sekundet
@@ -64,22 +37,6 @@ try:
     while not motor_serial.shutdown_now:
         iteration_start_time = time.time()
         now = time.time()
-
-        # Spill av lyd med tilfeldig pause på 10-20 sekunder.
-        if now >= next_audio_time:
-            if audio_process is None or audio_process.poll() is not None:
-                try:
-                    audio_process = play_audio(AUDIO_FILE)
-                except FileNotFoundError as error:
-                    print(error)
-                except OSError as error:
-                    print(f"Kunne ikke starte lydavspilling: {error}")
-                wait_time = random.uniform(10, 20)
-                print(f"Venter {wait_time:.1f} sekunder...")
-                next_audio_time = now + wait_time
-            else:
-                # Vent til den pågående lyden er ferdig før ny tidsplan.
-                next_audio_time = now + 1
 
         # Les sensorene
         dist_1 = motor_serial.get_dist_1()  # foran
