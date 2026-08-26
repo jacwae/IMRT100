@@ -13,7 +13,7 @@ right_open = 35
 side_margin = 5
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.35
+turn_duration_90 = 0.30
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
