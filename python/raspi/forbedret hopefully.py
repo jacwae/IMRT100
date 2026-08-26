@@ -10,11 +10,12 @@ execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
 obstacle_threshold_cm = 20.0
+side_obstacle_cm = 15.0
 right_open = 35
-side_margin = 4
+side_margin = 8
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.20
+turn_duration_90 = 0.15
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
@@ -85,7 +86,7 @@ try:
                 turn_speed_2 = motor_speed_2
 
         # Hindring på venstre side: sving høyre.
-        elif dist_2 < obstacle_threshold_cm:
+        elif dist_2 < side_obstacle_cm:
             motor_speed_1 = 120
             motor_speed_2 = -80
             turn_until = now + turn_duration_90
@@ -93,7 +94,7 @@ try:
             turn_speed_2 = motor_speed_2
 
         # Hindring på høyre side: sving venstre.
-        elif dist_3 < obstacle_threshold_cm:
+        elif dist_3 < side_obstacle_cm:
             motor_speed_1 = -80
             motor_speed_2 = 120
             turn_until = now + turn_duration_90
