@@ -17,6 +17,10 @@ turn_duration_90 = 0.35
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
+last_turn_direction = 0
+current_speed_1 = 0
+current_speed_2 = 0
+MAX_SPEED_CHANGE = 25
 
 # Opprett forbindelse med roboten
 motor_serial = imrt_robot_serial.IMRTRobotSerial()
@@ -29,6 +33,17 @@ except Exception:
 
 # Start mottak av sensordata
 motor_serial.run()
+
+
+def send_smooth_command(target_speed_1, target_speed_2):
+    """Endrer motorhastigheten gradvis for å unngå brå bevegelser."""
+    global current_speed_1, current_speed_2
+
+    change_1 = max(-MAX_SPEED_CHANGE, min(MAX_SPEED_CHANGE, target_speed_1 - current_speed_1))
+    change_2 = max(-MAX_SPEED_CHANGE, min(MAX_SPEED_CHANGE, target_speed_2 - current_speed_2))
+    current_speed_1 += change_1
+    current_speed_2 += change_2
+    motor_serial.send_command(current_speed_1, current_speed_2)
 
 print("Starter roboten. Trykk Ctrl+C for å stoppe.")
 
@@ -67,6 +82,7 @@ try:
             motor_speed_2 = -60
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
+            last_turn_direction = -1
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
             if dist_3 > dist_2 + side_margin:
@@ -74,13 +90,30 @@ try:
                 motor_speed_1 = 120
                 motor_speed_2 = -80
                 turn_until = now + turn_duration_90
-            else:
-                # Høyre er ikke tydelig åpen: sving venstre.
+                turn_speed_1 = motor_speed_1
+                turn_speed_2 = motor_speed_2
+                last_turn_direction = 1
+            elif dist_2 > dist_3 + side_margin:
+                # Venstre side har tydelig mest plass.
                 motor_speed_1 = -80
                 motor_speed_2 = 120
                 turn_until = now + turn_duration_90
-            turn_speed_1 = motor_speed_1
-            turn_speed_2 = motor_speed_2
+                turn_speed_1 = motor_speed_1
+                turn_speed_2 = motor_speed_2
+                last_turn_direction = -1
+            else:
+                # Ved nesten lik avstand velges motsatt av siste sving.
+                if last_turn_direction > 0:
+                    motor_speed_1 = -80
+                    motor_speed_2 = 120
+                    last_turn_direction = -1
+                else:
+                    motor_speed_1 = 120
+                    motor_speed_2 = -80
+                    last_turn_direction = 1
+                turn_until = now + turn_duration_90
+                turn_speed_1 = motor_speed_1
+                turn_speed_2 = motor_speed_2
         # Hindring på venstre side: sving høyre.
         elif dist_2 < obstacle_threshold_cm:
             motor_speed_1 = 120
@@ -88,7 +121,7 @@ try:
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
-
+            last_turn_direction = 1
         # Hindring på høyre side: sving venstre.
         elif dist_3 < obstacle_threshold_cm :
             motor_speed_1 = -80
@@ -96,14 +129,15 @@ try:
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
+            last_turn_direction = -1
         
         
         # Begrens motorfart mellom -400 og 400
         motor_speed_1 = max(-400, min(400, motor_speed_1))
         motor_speed_2 = max(-400, min(400, motor_speed_2))
         
-            # Send kommando til motorene.
-        motor_serial.send_command(motor_speed_1, motor_speed_2)
+                # Send kommando til motorene
+        send_smooth_command(motor_speed_1, motor_speed_2)
         
         # Hold løkken på 10 ganger per sekund
         iteration_duration = time.time() - iteration_start_time
@@ -114,9 +148,5 @@ except KeyboardInterrupt:
     print("Robot stoppet av bruker.")
         
 finally:
-    # Stopp motorene når programmet avsluttes
     motor_serial.send_command(0, 0)
     print("Goodbye")
-           
-
-
