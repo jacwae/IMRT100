@@ -119,4 +119,4 @@ except KeyboardInterrupt:
         
 finally:
     motor_serial.send_command(0, 0)
-    print("Goodbye")
+    print("Goodbye,")
