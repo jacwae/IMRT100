@@ -53,8 +53,8 @@ try:
         )
 
         # default fart roboten skal holde
-        motor_speed_1 = 200
-        motor_speed_2 = 200
+        motor_speed_1 = 250
+        motor_speed_2 = 250
 
         #fortsette vending som har startet
         if now < turn_until:
