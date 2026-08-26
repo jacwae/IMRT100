@@ -7,14 +7,18 @@ import random
 import subprocess
 
 
-# Lydfilen ligger i IMRT100/lydfil.
-AUDIO_FILE = Path(__file__).resolve().parents[2] / "lydfil" / "dinosaur.wav"
+# Finn lydfilen enten i prosjektets lydfil-mappe eller ved siden av programmet.
+audio_locations = (
+    Path(__file__).resolve().parents[2] / "lydfil" / "dinosaur.wav",
+    Path(__file__).resolve().with_name("dinosaur.wav"),
+)
+AUDIO_FILE = next((path for path in audio_locations if path.is_file()), audio_locations[0])
 def play_audio(file_path):
     """Spiller en WAV-fil."""
     if not file_path.exists():
         raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
 
-    print(f"Spiller: {file_path.name}")
+    print(f"Spiller: {file_path} ")
     return subprocess.Popen(["aplay", str(file_path)])
 
 
