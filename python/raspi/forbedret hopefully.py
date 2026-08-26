@@ -9,18 +9,17 @@ execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
 obstacle_threshold_cm = 20.0
-right_open = 35
-side_margin = 5
+side_target_cm = 24.0
+max_side_correction = 25
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.35
+turn_duration_90 = 0.28
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
-last_turn_direction = 0
 current_speed_1 = 0
 current_speed_2 = 0
-MAX_SPEED_CHANGE = 25
+max_speed_change = 20
 
 # Opprett forbindelse med roboten
 motor_serial = imrt_robot_serial.IMRTRobotSerial()
@@ -36,11 +35,17 @@ motor_serial.run()
 
 
 def send_smooth_command(target_speed_1, target_speed_2):
-    """Endrer motorhastigheten gradvis for å unngå brå bevegelser."""
+    """Endrer motorhastigheten gradvis for jevnere kjøring."""
     global current_speed_1, current_speed_2
 
-    change_1 = max(-MAX_SPEED_CHANGE, min(MAX_SPEED_CHANGE, target_speed_1 - current_speed_1))
-    change_2 = max(-MAX_SPEED_CHANGE, min(MAX_SPEED_CHANGE, target_speed_2 - current_speed_2))
+    change_1 = max(
+        -max_speed_change,
+        min(max_speed_change, target_speed_1 - current_speed_1),
+    )
+    change_2 = max(
+        -max_speed_change,
+        min(max_speed_change, target_speed_2 - current_speed_2),
+    )
     current_speed_1 += change_1
     current_speed_2 += change_2
     motor_serial.send_command(current_speed_1, current_speed_2)
@@ -67,8 +72,8 @@ try:
 
         # default fart roboten skal holde
 
-        motor_speed_1 = 160
-        motor_speed_2 = 160
+        motor_speed_1 = 130
+        motor_speed_2 = 130
 
         #fortsette vending som har startet
         if now < turn_until:
@@ -82,54 +87,33 @@ try:
             motor_speed_2 = -60
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
-            last_turn_direction = -1
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
-            if dist_3 > dist_2 + side_margin:
-                # sving høyre 
+            if dist_3 > dist_2:
+                # Mest plass til høyre.
                 motor_speed_1 = 120
                 motor_speed_2 = -80
                 turn_until = now + turn_duration_90
                 turn_speed_1 = motor_speed_1
                 turn_speed_2 = motor_speed_2
-                last_turn_direction = 1
-            elif dist_2 > dist_3 + side_margin:
-                # Venstre side har tydelig mest plass.
+            else:
+                # Mest plass til venstre.
                 motor_speed_1 = -80
                 motor_speed_2 = 120
                 turn_until = now + turn_duration_90
                 turn_speed_1 = motor_speed_1
                 turn_speed_2 = motor_speed_2
-                last_turn_direction = -1
-            else:
-                # Ved nesten lik avstand velges motsatt av siste sving.
-                if last_turn_direction > 0:
-                    motor_speed_1 = -80
-                    motor_speed_2 = 120
-                    last_turn_direction = -1
-                else:
-                    motor_speed_1 = 120
-                    motor_speed_2 = -80
-                    last_turn_direction = 1
-                turn_until = now + turn_duration_90
-                turn_speed_1 = motor_speed_1
-                turn_speed_2 = motor_speed_2
-        # Hindring på venstre side: sving høyre.
-        elif dist_2 < obstacle_threshold_cm:
-            motor_speed_1 = 120
-            motor_speed_2 = -80
-            turn_until = now + turn_duration_90
-            turn_speed_1 = motor_speed_1
-            turn_speed_2 = motor_speed_2
-            last_turn_direction = 1
-        # Hindring på høyre side: sving venstre.
-        elif dist_3 < obstacle_threshold_cm :
-            motor_speed_1 = -80
-            motor_speed_2 = 120
-            turn_until = now + turn_duration_90
-            turn_speed_1 = motor_speed_1
-            turn_speed_2 = motor_speed_2
-            last_turn_direction = -1
+
+        else:
+            # Følg sidene med en liten, gradvis motorkorrigering.
+            left_error = side_target_cm - dist_2
+            right_error = side_target_cm - dist_3
+            side_correction = max(
+                -max_side_correction,
+                min(max_side_correction, left_error - right_error),
+            )
+            motor_speed_1 = 130 + side_correction
+            motor_speed_2 = 130 - side_correction
         
         
         # Begrens motorfart mellom -400 og 400
