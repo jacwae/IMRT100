@@ -1,138 +1,163 @@
 import random
-import sys
-
-import pygame
+import tkinter as tk
 
 
 WIDTH = 800
 HEIGHT = 480
 GROUND_Y = 385
-FPS = 60
 
-BACKGROUND = (247, 244, 234)
-INK = (35, 41, 38)
-GROUND = (104, 116, 102)
-CACTUS = (49, 111, 78)
-ACCENT = (225, 111, 72)
-
-
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Offline Dino Run")
-clock = pygame.time.Clock()
-font = pygame.font.Font(None, 32)
-big_font = pygame.font.Font(None, 64)
+BACKGROUND = "#f7f4ea"
+INK = "#232924"
+GROUND = "#687466"
+CACTUS = "#316f4e"
+ACCENT = "#e16f48"
 
 
-def draw_dinosaur(surface, rectangle):
-    pygame.draw.rect(surface, INK, rectangle)
-    pygame.draw.rect(
-        surface,
-        INK,
-        (rectangle.x + rectangle.width - 8, rectangle.y - 22, 16, 28),
-    )
-    pygame.draw.rect(surface, BACKGROUND, (rectangle.right - 7, rectangle.y - 15, 4, 4))
-    pygame.draw.rect(surface, INK, (rectangle.x + 6, rectangle.bottom - 2, 7, 18))
-    pygame.draw.rect(surface, INK, (rectangle.right - 13, rectangle.bottom - 2, 7, 18))
+class DinoGame:
+    def __init__(self, window):
+        self.window = window
+        self.window.title("Offline Dino Run")
+        self.canvas = tk.Canvas(
+            window,
+            width=WIDTH,
+            height=HEIGHT,
+            bg=BACKGROUND,
+            highlightthickness=0,
+        )
+        self.canvas.pack()
+        self.window.bind("<space>", self.jump)
+        self.window.bind("<Up>", self.jump)
+        self.window.bind("<KeyPress-r>", self.restart)
+        self.window.bind("<Escape>", lambda event: self.window.destroy())
+        self.reset()
+        self.update()
 
+    def reset(self):
+        self.dino_x = 100
+        self.dino_y = GROUND_Y - 58
+        self.dino_velocity = 0
+        self.obstacles = []
+        self.obstacle_timer = 50
+        self.score = 0
+        self.game_over = False
+        self.ground_offset = 0
 
-def draw_cactus(surface, rectangle):
-    pygame.draw.rect(surface, CACTUS, rectangle)
-    pygame.draw.rect(surface, CACTUS, (rectangle.x - 10, rectangle.y + 18, 10, 8))
-    pygame.draw.rect(surface, CACTUS, (rectangle.x - 10, rectangle.y + 10, 8, 16))
-    pygame.draw.rect(surface, CACTUS, (rectangle.right, rectangle.y + 32, 10, 8))
-    pygame.draw.rect(surface, CACTUS, (rectangle.right + 2, rectangle.y + 24, 8, 16))
+    def jump(self, event=None):
+        if self.game_over:
+            self.reset()
+        elif self.dino_y >= GROUND_Y - 58:
+            self.dino_velocity = -16
 
+    def restart(self, event=None):
+        if self.game_over:
+            self.reset()
 
-def reset_game():
-    return {
-        "dinosaur": pygame.Rect(100, GROUND_Y - 58, 42, 58),
-        "vertical_speed": 0.0,
-        "obstacles": [],
-        "obstacle_timer": 80,
-        "score": 0,
-        "game_over": False,
-        "ground_offset": 0,
-    }
+    def update(self):
+        if not self.game_over:
+            self.dino_velocity += 0.8
+            self.dino_y += self.dino_velocity
+            if self.dino_y > GROUND_Y - 58:
+                self.dino_y = GROUND_Y - 58
+                self.dino_velocity = 0
 
+            self.obstacle_timer -= 1
+            if self.obstacle_timer <= 0:
+                height = random.choice((35, 45, 60))
+                width = random.choice((18, 24, 30))
+                self.obstacles.append([WIDTH + 20, height, width])
+                self.obstacle_timer = random.randint(55, 100)
 
-game = reset_game()
-running = True
+            for obstacle in self.obstacles:
+                obstacle[0] -= 7
+            self.obstacles = [
+                obstacle for obstacle in self.obstacles if obstacle[0] + obstacle[2] > 0
+            ]
 
-while running:
-    jump_requested = False
-    restart_requested = False
+            self.score += 1
+            self.ground_offset = (self.ground_offset + 7) % 40
+            self.check_collision()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_SPACE, pygame.K_UP):
-                jump_requested = True
-            elif event.key == pygame.K_r:
-                restart_requested = True
-            elif event.key == pygame.K_ESCAPE:
-                running = False
+        self.draw()
+        self.window.after(16, self.update)
 
-    if restart_requested and game["game_over"]:
-        game = reset_game()
+    def check_collision(self):
+        dino_left = self.dino_x + 8
+        dino_right = self.dino_x + 34
+        dino_top = self.dino_y + 8
+        dino_bottom = self.dino_y + 58
 
-    dinosaur = game["dinosaur"]
+        for obstacle_x, obstacle_height, obstacle_width in self.obstacles:
+            obstacle_left = obstacle_x
+            obstacle_right = obstacle_x + obstacle_width
+            obstacle_top = GROUND_Y - obstacle_height
+            if (
+                dino_right > obstacle_left
+                and dino_left < obstacle_right
+                and dino_bottom > obstacle_top
+                and dino_top < GROUND_Y
+            ):
+                self.game_over = True
 
-    if not game["game_over"]:
-        if jump_requested and dinosaur.bottom >= GROUND_Y:
-            game["vertical_speed"] = -16
+    def draw(self):
+        self.canvas.delete("all")
+        self.canvas.create_line(0, GROUND_Y, WIDTH, GROUND_Y, fill=GROUND, width=3)
 
-        game["vertical_speed"] += 0.8
-        dinosaur.y += int(game["vertical_speed"])
-        if dinosaur.bottom >= GROUND_Y:
-            dinosaur.bottom = GROUND_Y
-            game["vertical_speed"] = 0
-
-        game["obstacle_timer"] -= 1
-        if game["obstacle_timer"] <= 0:
-            height = random.choice((35, 45, 60))
-            width = random.choice((18, 24, 30))
-            game["obstacles"].append(
-                pygame.Rect(WIDTH + 20, GROUND_Y - height, width, height)
+        for x in range(-40, WIDTH + 40, 40):
+            line_x = x - self.ground_offset
+            self.canvas.create_line(
+                line_x,
+                GROUND_Y + 14,
+                line_x + 16,
+                GROUND_Y + 14,
+                fill=GROUND,
+                width=2,
             )
-            game["obstacle_timer"] = random.randint(65, 115)
 
-        for obstacle in game["obstacles"]:
-            obstacle.x -= 7
+        self.draw_dinosaur()
+        for obstacle_x, obstacle_height, obstacle_width in self.obstacles:
+            self.draw_cactus(obstacle_x, obstacle_height, obstacle_width)
 
-        game["obstacles"] = [
-            obstacle for obstacle in game["obstacles"] if obstacle.right > 0
-        ]
-        game["score"] += 1
-        game["ground_offset"] = (game["ground_offset"] + 7) % 40
+        self.canvas.create_text(
+            WIDTH - 75,
+            28,
+            text=f"SCORE {self.score // 6:04d}",
+            fill=INK,
+            font=("TkFixedFont", 16),
+        )
 
-        dinosaur_hitbox = dinosaur.inflate(-10, -8)
-        if any(dinosaur_hitbox.colliderect(obstacle) for obstacle in game["obstacles"]):
-            game["game_over"] = True
+        if self.game_over:
+            self.canvas.create_text(
+                WIDTH // 2,
+                HEIGHT // 2 - 24,
+                text="GAME OVER",
+                fill=ACCENT,
+                font=("TkFixedFont", 36, "bold"),
+            )
+            self.canvas.create_text(
+                WIDTH // 2,
+                HEIGHT // 2 + 28,
+                text="SPACE to jump    R to restart",
+                fill=INK,
+                font=("TkFixedFont", 16),
+            )
 
-    screen.fill(BACKGROUND)
-    pygame.draw.line(screen, GROUND, (0, GROUND_Y), (WIDTH, GROUND_Y), 3)
+    def draw_dinosaur(self):
+        x = self.dino_x
+        y = self.dino_y
+        self.canvas.create_rectangle(x, y, x + 42, y + 58, fill=INK, outline=INK)
+        self.canvas.create_rectangle(x + 34, y - 22, x + 50, y + 6, fill=INK, outline=INK)
+        self.canvas.create_rectangle(x + 35, y - 15, x + 39, y - 11, fill=BACKGROUND, outline=BACKGROUND)
+        self.canvas.create_rectangle(x + 6, y + 56, x + 13, y + 74, fill=INK, outline=INK)
+        self.canvas.create_rectangle(x + 29, y + 56, x + 36, y + 74, fill=INK, outline=INK)
 
-    for x in range(-40, WIDTH + 40, 40):
-        line_x = x - game["ground_offset"]
-        pygame.draw.line(screen, GROUND, (line_x, GROUND_Y + 14), (line_x + 16, GROUND_Y + 14), 2)
+    def draw_cactus(self, x, height, width):
+        top = GROUND_Y - height
+        self.canvas.create_rectangle(x, top, x + width, GROUND_Y, fill=CACTUS, outline=CACTUS)
+        self.canvas.create_rectangle(x - 10, top + 18, x, top + 26, fill=CACTUS, outline=CACTUS)
+        self.canvas.create_rectangle(x - 10, top + 10, x - 2, top + 26, fill=CACTUS, outline=CACTUS)
+        self.canvas.create_rectangle(x + width, top + 32, x + width + 10, top + 40, fill=CACTUS, outline=CACTUS)
 
-    draw_dinosaur(screen, dinosaur)
-    for obstacle in game["obstacles"]:
-        draw_cactus(screen, obstacle)
 
-    score_text = font.render(f"SCORE {game['score'] // 6:04d}", True, INK)
-    screen.blit(score_text, (WIDTH - score_text.get_width() - 24, 24))
-
-    if game["game_over"]:
-        title = big_font.render("GAME OVER", True, ACCENT)
-        prompt = font.render("SPACE to jump    R to restart", True, INK)
-        screen.blit(title, title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 24)))
-        screen.blit(prompt, prompt.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 32)))
-
-    pygame.display.flip()
-    clock.tick(FPS)
-
-pygame.quit()
-sys.exit()
+window = tk.Tk()
+DinoGame(window)
+window.mainloop()
