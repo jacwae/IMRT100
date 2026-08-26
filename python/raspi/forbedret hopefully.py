@@ -10,7 +10,7 @@ execution_period = 1.0 / execution_frequency
 # Avstand der roboten reagerer på hindringer
 obstacle_threshold_cm = 20.0
 right_open = 35
-right_closed = 15
+side_margin = 5
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
 turn_duration_90 = 0.35
@@ -69,30 +69,30 @@ try:
             turn_speed_2 = motor_speed_2
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
-            if dist_3 > right_open:
+            if dist_3 > dist_2 + side_margin:
                 # sving høyre 
-                motor_speed_1 = 100
-                motor_speed_2 = -65
+                motor_speed_1 = 120
+                motor_speed_2 = -80
                 turn_until = now + turn_duration_90
             else:
                 # Høyre er ikke tydelig åpen: sving venstre.
-                motor_speed_1 = -65
-                motor_speed_2 = 100
+                motor_speed_1 = -80
+                motor_speed_2 = 120
                 turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
         # Hindring på venstre side: sving høyre.
         elif dist_2 < obstacle_threshold_cm:
-            motor_speed_1 = 100
-            motor_speed_2 = -65
+            motor_speed_1 = 120
+            motor_speed_2 = -80
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
 
         # Hindring på høyre side: sving venstre.
         elif dist_3 < obstacle_threshold_cm :
-            motor_speed_1 = -65
-            motor_speed_2 = 100
+            motor_speed_1 = -80
+            motor_speed_2 = 120
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
