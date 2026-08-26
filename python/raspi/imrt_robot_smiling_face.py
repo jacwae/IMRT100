@@ -1,107 +1,138 @@
-import pygame
 import random
-from math import cos, sin, sqrt, pi
+import sys
+
+import pygame
 
 
+WIDTH = 800
+HEIGHT = 480
+GROUND_Y = 385
+FPS = 60
 
-def draw_eye(eye_pos, ball_size, pup_size, view_angle, view_offset):
-    '''
-    This function draws an eye on the screen
-    '''
-
-    # pygame uses corner of rectangle as posistion for ellipses, our function uses center
-    ball_corner = (eye_pos[0] - ball_size[0] / 2, eye_pos[1] - ball_size[1] / 2)
-    
-    # draw ellipses
-    pygame.draw.ellipse(surface, WHITE, ball_corner + ball_size, 0)
-    pygame.draw.ellipse(surface, BLACK, ball_corner + ball_size, 2)
-
-    # calculate ellipse radius at given view angle
-    ellipse_radius = ball_size[0]/2 * ball_size[1]/2 * sqrt(1 / ((ball_size[1]/2)**2 * cos(view_angle)**2 + (ball_size[0]/2)**2 * sin(view_angle)**2))
-
-    # calculate pupile x and y
-    pup_x = eye_pos[0] + int( (view_offset * (ellipse_radius - pup_size)) * cos(view_angle) )
-    pup_y = eye_pos[1] + int( (view_offset * (ellipse_radius - pup_size)) * sin(view_angle) )
-
-    # draw pupile
-    pygame.draw.circle(surface, BLACK, (pup_x, pup_y), 20, 0)
+BACKGROUND = (247, 244, 234)
+INK = (35, 41, 38)
+GROUND = (104, 116, 102)
+CACTUS = (49, 111, 78)
+ACCENT = (225, 111, 72)
 
 
-
-# windows size
-win_x = 800
-win_y = 480
-win_size = [win_x,win_y]
-
-# pygame setup
 pygame.init()
-win = pygame.display
-win.set_caption('Robot eyes')
-surface = win.set_mode(win_size)
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Offline Dino Run")
 clock = pygame.time.Clock()
-
-# load mouth image
-mouth = pygame.image.load('mouth_382_crop.png')
-
-# define some colors
-WHITE = (255, 255, 255)
-BLACK = (  0,   0,   0)
-GREEN = (  0, 154, 129)
-
-# initial view angle and offset values
-l_eye_angle = 0
-l_eye_offset = 0
-r_eye_angle = 0
-r_eye_offset = 0
-
-# eye spacing
-eye_spacing = 200
-
-# full screen (comment this line to disable full screen at startup)
-DISPLAYSURF = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+font = pygame.font.Font(None, 32)
+big_font = pygame.font.Font(None, 64)
 
 
-window = True
+def draw_dinosaur(surface, rectangle):
+    pygame.draw.rect(surface, INK, rectangle)
+    pygame.draw.rect(
+        surface,
+        INK,
+        (rectangle.x + rectangle.width - 8, rectangle.y - 22, 16, 28),
+    )
+    pygame.draw.rect(surface, BACKGROUND, (rectangle.right - 7, rectangle.y - 15, 4, 4))
+    pygame.draw.rect(surface, INK, (rectangle.x + 6, rectangle.bottom - 2, 7, 18))
+    pygame.draw.rect(surface, INK, (rectangle.right - 13, rectangle.bottom - 2, 7, 18))
 
-while window:
 
-    # set background color
-    surface.fill(GREEN)
-    
-    # make mouth shake by moving it slightly at random
-    mouth_x = (win_x - mouth.get_rect().width) / 2 + random.randint(-4, 4)
-    mouth_y = win_y * 11 / 18 + random.randint(-4, 4)
-    
-    # draw mouth
-    surface.blit(mouth, (mouth_x, mouth_y))
-    
-    # change left eye values at random
-    if (random.randint(0, 200) == 100):
-        l_eye_angle = random.random() * 2 * pi
-        l_eye_offset = random.random()
+def draw_cactus(surface, rectangle):
+    pygame.draw.rect(surface, CACTUS, rectangle)
+    pygame.draw.rect(surface, CACTUS, (rectangle.x - 10, rectangle.y + 18, 10, 8))
+    pygame.draw.rect(surface, CACTUS, (rectangle.x - 10, rectangle.y + 10, 8, 16))
+    pygame.draw.rect(surface, CACTUS, (rectangle.right, rectangle.y + 32, 10, 8))
+    pygame.draw.rect(surface, CACTUS, (rectangle.right + 2, rectangle.y + 24, 8, 16))
 
-    # change right eye values at random
-    if (random.randint(0, 200) == 100):
-        r_eye_angle = random.random() * 2 * pi
-        r_eye_offset = random.random()
 
-    # draw eyes
-    draw_eye(( (win_x + eye_spacing) / 2, win_y * 7 / 18), (160, 200), 20, l_eye_angle, l_eye_offset)
-    draw_eye(( (win_x - eye_spacing) / 2, win_y * 7 / 18), (160, 200), 20, r_eye_angle, r_eye_offset)
+def reset_game():
+    return {
+        "dinosaur": pygame.Rect(100, GROUND_Y - 58, 42, 58),
+        "vertical_speed": 0.0,
+        "obstacles": [],
+        "obstacle_timer": 80,
+        "score": 0,
+        "game_over": False,
+        "ground_offset": 0,
+    }
 
-    # update display
-    pygame.display.update()
 
-    # check and handle events
-    events = pygame.event.get()
-    for event in events:
+game = reset_game()
+running = True
+
+while running:
+    jump_requested = False
+    restart_requested = False
+
+    for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            window = False
+            running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                window = False
+            if event.key in (pygame.K_SPACE, pygame.K_UP):
+                jump_requested = True
+            elif event.key == pygame.K_r:
+                restart_requested = True
+            elif event.key == pygame.K_ESCAPE:
+                running = False
 
-    # sleep for a while
-    clock.tick(40)
+    if restart_requested and game["game_over"]:
+        game = reset_game()
 
-    
+    dinosaur = game["dinosaur"]
+
+    if not game["game_over"]:
+        if jump_requested and dinosaur.bottom >= GROUND_Y:
+            game["vertical_speed"] = -16
+
+        game["vertical_speed"] += 0.8
+        dinosaur.y += int(game["vertical_speed"])
+        if dinosaur.bottom >= GROUND_Y:
+            dinosaur.bottom = GROUND_Y
+            game["vertical_speed"] = 0
+
+        game["obstacle_timer"] -= 1
+        if game["obstacle_timer"] <= 0:
+            height = random.choice((35, 45, 60))
+            width = random.choice((18, 24, 30))
+            game["obstacles"].append(
+                pygame.Rect(WIDTH + 20, GROUND_Y - height, width, height)
+            )
+            game["obstacle_timer"] = random.randint(65, 115)
+
+        for obstacle in game["obstacles"]:
+            obstacle.x -= 7
+
+        game["obstacles"] = [
+            obstacle for obstacle in game["obstacles"] if obstacle.right > 0
+        ]
+        game["score"] += 1
+        game["ground_offset"] = (game["ground_offset"] + 7) % 40
+
+        dinosaur_hitbox = dinosaur.inflate(-10, -8)
+        if any(dinosaur_hitbox.colliderect(obstacle) for obstacle in game["obstacles"]):
+            game["game_over"] = True
+
+    screen.fill(BACKGROUND)
+    pygame.draw.line(screen, GROUND, (0, GROUND_Y), (WIDTH, GROUND_Y), 3)
+
+    for x in range(-40, WIDTH + 40, 40):
+        line_x = x - game["ground_offset"]
+        pygame.draw.line(screen, GROUND, (line_x, GROUND_Y + 14), (line_x + 16, GROUND_Y + 14), 2)
+
+    draw_dinosaur(screen, dinosaur)
+    for obstacle in game["obstacles"]:
+        draw_cactus(screen, obstacle)
+
+    score_text = font.render(f"SCORE {game['score'] // 6:04d}", True, INK)
+    screen.blit(score_text, (WIDTH - score_text.get_width() - 24, 24))
+
+    if game["game_over"]:
+        title = big_font.render("GAME OVER", True, ACCENT)
+        prompt = font.render("SPACE to jump    R to restart", True, INK)
+        screen.blit(title, title.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 24)))
+        screen.blit(prompt, prompt.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 32)))
+
+    pygame.display.flip()
+    clock.tick(FPS)
+
+pygame.quit()
+sys.exit()
