@@ -9,7 +9,7 @@ execution_frequency = 10
 execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
-obstacle_threshold_cm = 25.0
+obstacle_threshold_cm = 20.0
 side_obstacle_cm = 15.0
 right_open = 35
 side_margin = 8
@@ -53,8 +53,8 @@ try:
         )
 
         # default fart roboten skal holde
-        motor_speed_1 = 250
-        motor_speed_2 = 250
+        motor_speed_1 = 200
+        motor_speed_2 = 200
 
         #fortsette vending som har startet
         if now < turn_until:
