@@ -20,12 +20,14 @@ def play_audio(file_path):
     if not file_path.exists():
         raise FileNotFoundError(f"Fant ikke lydfilen: {file_path}")
 
-    print(f"Spiller: {file_path} ")
+    print(f"Spiller: {file_path.name}")
     return subprocess.Popen(["aplay", str(file_path)])
 
 
 print(f"Lydfil: {AUDIO_FILE} (finnes: {AUDIO_FILE.is_file()})")
-next_audio_time = time.time() + random.uniform(3, 5)
+wait_time = random.uniform(3, 5)
+print(f"Venter {wait_time:.1f} sekunder...")
+next_audio_time = time.time() + wait_time
 audio_process = None
 
 
@@ -72,7 +74,9 @@ try:
                     print(error)
                 except OSError as error:
                     print(f"Kunne ikke starte lydavspilling: {error}")
-                next_audio_time = now + random.uniform(3, 5)
+                wait_time = random.uniform(3, 5)
+                print(f"Venter {wait_time:.1f} sekunder...")
+                next_audio_time = now + wait_time
 
         # Les sensorene
         dist_1 = motor_serial.get_dist_1()  # foran
