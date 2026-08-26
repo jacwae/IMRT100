@@ -10,10 +10,10 @@ execution_period = 1.0 / execution_frequency
 # Avstand der roboten reagerer på hindringer
 obstacle_threshold_cm = 20.0
 right_open = 35
-side_margin = 5
+side_margin = 6
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.30
+turn_duration_90 = 0.20
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
@@ -51,8 +51,8 @@ try:
         )
 
         # default fart roboten skal holde
-        motor_speed_1 = 160
-        motor_speed_2 = 160
+        motor_speed_1 = 200
+        motor_speed_2 = 200
 
         #fortsette vending som har startet
         if now < turn_until:
