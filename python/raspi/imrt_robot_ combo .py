@@ -5,7 +5,7 @@ import sys
 # Velg scenario:
 # "vanlig" = den opprinnelige hindringskoden
 # "veggfølging" = følg veggen på høyre side i labyrinten
-scenario = "vanlig"
+scenario = "veggfølging"
 
 # Programmet sender 10 kommandoer i sekundet
 execution_frequency = 10
