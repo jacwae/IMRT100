@@ -13,6 +13,8 @@ audio_locations = (
     Path(__file__).resolve().with_name("dinosaur.wav"),
 )
 AUDIO_FILE = next((path for path in audio_locations if path.is_file()), audio_locations[0])
+
+
 def play_audio(file_path):
     """Spiller en WAV-fil."""
     if not file_path.exists():
@@ -22,6 +24,7 @@ def play_audio(file_path):
     return subprocess.Popen(["aplay", str(file_path)])
 
 
+print(f"Lydfil: {AUDIO_FILE} (finnes: {AUDIO_FILE.is_file()})")
 next_audio_time = time.time() + random.uniform(3, 5)
 audio_process = None
 
