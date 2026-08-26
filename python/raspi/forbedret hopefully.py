@@ -13,7 +13,7 @@ right_open = 35
 right_closed = 15
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.6
+turn_duration_90 = 0.35
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
@@ -71,28 +71,28 @@ try:
         elif dist_1 < obstacle_threshold_cm:
             if dist_3 > right_open:
                 # sving høyre 
-                motor_speed_1 = 120
-                motor_speed_2 = -80
+                motor_speed_1 = 100
+                motor_speed_2 = -65
                 turn_until = now + turn_duration_90
             else:
                 # Høyre er ikke tydelig åpen: sving venstre.
-                motor_speed_1 = -80
-                motor_speed_2 = 120
+                motor_speed_1 = -65
+                motor_speed_2 = 100
                 turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
         # Hindring på venstre side: sving høyre.
         elif dist_2 < obstacle_threshold_cm:
-            motor_speed_1 = 120
-            motor_speed_2 = -80
+            motor_speed_1 = 100
+            motor_speed_2 = -65
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
 
         # Hindring på høyre side: sving venstre.
         elif dist_3 < obstacle_threshold_cm :
-            motor_speed_1 = -80
-            motor_speed_2 = 120
+            motor_speed_1 = -65
+            motor_speed_2 = 100
             turn_until = now + turn_duration_90
             turn_speed_1 = motor_speed_1
             turn_speed_2 = motor_speed_2
