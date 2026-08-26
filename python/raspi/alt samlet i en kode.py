@@ -18,6 +18,39 @@ AUDIO_FILE = Path(__file__).with_name("dinosaur.wav")
 MIN_AUDIO_WAIT = 3.0
 MAX_AUDIO_WAIT = 5.0
 
+# PNG-bildet ligger i samme mappe som dette Python-programmet.
+IMAGE_FILE = Path(__file__).with_name(
+    "8360f877-71f0-41d4-8866-5b236ddb9d23.png"
+)
+
+IMAGE_VIEWER = """
+import sys
+import tkinter as tk
+
+window = tk.Tk()
+window.attributes("-fullscreen", True)
+window.configure(background="black")
+window.bind("<Escape>", lambda event: window.destroy())
+image = tk.PhotoImage(file=sys.argv[1])
+label = tk.Label(window, image=image, background="black")
+label.pack(expand=True)
+window.mainloop()
+"""
+
+
+def start_image_viewer(image_file: Path):
+    """Viser PNG-bildet på storskjermen uten å stoppe roboten."""
+    if not image_file.is_file():
+        print(f"Fant ikke PNG-bildet: {image_file}")
+        return None
+
+    return subprocess.Popen([
+        sys.executable,
+        "-c",
+        IMAGE_VIEWER,
+        str(image_file),
+    ])
+
 OBSTACLE_THRESHOLD_CM = 15.0
 TURN_DURATION = 1.34
 
@@ -42,6 +75,7 @@ def main():
         sys.exit(1)
 
     motor_serial.run()
+    image_process = start_image_viewer(IMAGE_FILE)
 
     # monotonic() pavirkes ikke dersom systemklokken blir endret.
     turn_until = 0.0
@@ -158,6 +192,10 @@ def main():
             except subprocess.TimeoutExpired:
                 audio_process.kill()
                 audio_process.wait()
+
+        # Stopp bildevisningen når robotprogrammet avsluttes.
+        if image_process is not None and image_process.poll() is None:
+            image_process.terminate()
 
         print("Goodbye")
 
