@@ -9,17 +9,14 @@ execution_period = 1.0 / execution_frequency
 
 # Avstand der roboten reagerer på hindringer
 obstacle_threshold_cm = 20.0
-side_target_cm = 24.0
-max_side_correction = 25
+right_open = 35
+side_margin = 5
 # Tid roboten skal snu når den er blokkert
 turn_duration = 1.34
-turn_duration_90 = 0.28
+turn_duration_90 = 0.35
 turn_until = 0.0
 turn_speed_1 = 0
 turn_speed_2 = 0
-current_speed_1 = 0
-current_speed_2 = 0
-max_speed_change = 20
 
 # Opprett forbindelse med roboten
 motor_serial = imrt_robot_serial.IMRTRobotSerial()
@@ -32,23 +29,6 @@ except Exception:
 
 # Start mottak av sensordata
 motor_serial.run()
-
-
-def send_smooth_command(target_speed_1, target_speed_2):
-    """Endrer motorhastigheten gradvis for jevnere kjøring."""
-    global current_speed_1, current_speed_2
-
-    change_1 = max(
-        -max_speed_change,
-        min(max_speed_change, target_speed_1 - current_speed_1),
-    )
-    change_2 = max(
-        -max_speed_change,
-        min(max_speed_change, target_speed_2 - current_speed_2),
-    )
-    current_speed_1 += change_1
-    current_speed_2 += change_2
-    motor_serial.send_command(current_speed_1, current_speed_2)
 
 print("Starter roboten. Trykk Ctrl+C for å stoppe.")
 
@@ -71,9 +51,8 @@ try:
         )
 
         # default fart roboten skal holde
-
-        motor_speed_1 = 130
-        motor_speed_2 = 130
+        motor_speed_1 = 160
+        motor_speed_2 = 160
 
         #fortsette vending som har startet
         if now < turn_until:
@@ -89,7 +68,7 @@ try:
             turn_speed_2 = motor_speed_2
         # hvis distansen på sensor 1 er mindre enn 15, sving til siden som har største avstand
         elif dist_1 < obstacle_threshold_cm:
-            if dist_3 > dist_2:
+            if dist_3 > dist_2 + side_margin:
                 # Mest plass til høyre.
                 motor_speed_1 = 120
                 motor_speed_2 = -80
@@ -104,16 +83,21 @@ try:
                 turn_speed_1 = motor_speed_1
                 turn_speed_2 = motor_speed_2
 
-        else:
-            # Følg sidene med en liten, gradvis motorkorrigering.
-            left_error = side_target_cm - dist_2
-            right_error = side_target_cm - dist_3
-            side_correction = max(
-                -max_side_correction,
-                min(max_side_correction, left_error - right_error),
-            )
-            motor_speed_1 = 130 + side_correction
-            motor_speed_2 = 130 - side_correction
+        # Hindring på venstre side: sving høyre.
+        elif dist_2 < obstacle_threshold_cm:
+            motor_speed_1 = 120
+            motor_speed_2 = -80
+            turn_until = now + turn_duration_90
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
+
+        # Hindring på høyre side: sving venstre.
+        elif dist_3 < obstacle_threshold_cm:
+            motor_speed_1 = -80
+            motor_speed_2 = 120
+            turn_until = now + turn_duration_90
+            turn_speed_1 = motor_speed_1
+            turn_speed_2 = motor_speed_2
         
         
         # Begrens motorfart mellom -400 og 400
@@ -121,7 +105,7 @@ try:
         motor_speed_2 = max(-400, min(400, motor_speed_2))
         
                 # Send kommando til motorene
-        send_smooth_command(motor_speed_1, motor_speed_2)
+        motor_serial.send_command(motor_speed_1, motor_speed_2)
         
         # Hold løkken på 10 ganger per sekund
         iteration_duration = time.time() - iteration_start_time
